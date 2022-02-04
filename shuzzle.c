@@ -253,6 +253,12 @@ in_sep(__)
 }
 
 static void
+out_flush(__)
+{
+  fflush(stdout);
+}
+
+static void
 out_sep(__)
 {
   putchar('\t');
@@ -433,6 +439,12 @@ out_cvec(__, const char *img)
   out_lf(_);
 }
 
+static void
+out_d(__, double d)
+{
+  printf("%F", d);
+}
+
 void
 _gen(__, const char *img)
 {
@@ -442,19 +454,11 @@ _gen(__, const char *img)
 }
 
 void
-gen(__, const char *img)
+read_lines(__, char c, void (*fn)(__, const char *))
 {
-  char	buf[PATH_MAX], c;
+  char	buf[PATH_MAX];
   int	fill, line;
 
-  if (strcmp(img, "0"))
-    {
-      if (strcmp(img, "-"))
-        return _gen(_, img);
-      c	= '\n';
-    }
-  else
-    c	= 0;
   for (fill=line=0;; )
     {
       int	i, j, max;
@@ -466,7 +470,7 @@ gen(__, const char *img)
               continue;
           buf[i]	= 0;
           if (buf[j])		/* ignore empty lines	*/
-            _gen(_, buf+j);
+            fn(_, buf+j);
           j = i+1;
           line++;
         }
@@ -488,6 +492,22 @@ gen(__, const char *img)
       if (feof(stdin) && !fill)
         break;
     }
+}
+
+void
+gen(__, const char *img)
+{
+  char	c;
+
+  if (strcmp(img, "0"))
+    {
+      if (strcmp(img, "-"))
+        return _gen(_, img);
+      c	= '\n';
+    }
+  else
+    c	= 0;
+  read_lines(_, c, _gen);
 }
 
 static void
@@ -595,11 +615,59 @@ sig(__)
   return 0;
 }
 
-static int
-cmp(__)
+static void
+_cmp(__, const char *img)
 {
-  return 1;
+  PuzzleCvec	V, *v;
+  double	d;
+  int		first;
+
+  first	= 1;
+  if ((v = &_->V)->vec)
+    {
+      v	= &V;
+      puzzle_init_cvec(&_->P, v);
+      first = 0;
+    }
+
+  if (puzzle_fill_cvec_from_file(&_->P, v, img))
+    OOPS(_, "cannot read", img, NULL);
+  if (first)
+    return;
+
+  d = puzzle_vector_normalized_distance(&_->P, &_->V, v, 1);
+  puzzle_free_cvec(&_->P, v);
+
+  out_d(_, d);
+  out_sep(_);
+  out_s(_, img);
+  out_lf(_);
+  out_flush(_);
 }
+
+static void
+cmp(__, const char *img)
+{
+  char	c;
+
+  c	= 0;
+  if (strcmp(img, "0"))
+    {
+      if (strcmp(img, "-"))
+        return _cmp(_, img);
+      c	= '\n';
+    }
+  read_lines(_, c, _cmp);
+}
+
+static int
+cmps(__)
+{
+  while (*_->argv)
+    cmp(_, *_->argv++);
+  return 0;
+}
+
 
 static void
 lambdas(__)
@@ -628,23 +696,26 @@ main(int argc, char **argv)
 
   if (_->argc> 0 && !strcmp("gen", _->argv[-1]))		return imgs(_);
   if (_->argc>=0 && !strcmp("sig", _->argv[-1]) && _->argc<3)	return sig(_);
-  if (_->argc>=0 && !strcmp("cmp", _->argv[-1]) && _->argc<2)	return cmp(_);
+  if (_->argc> 0 && !strcmp("cmp", _->argv[-1]))		return cmps(_);
 
   fprintf(stderr,
           "Usage: %s [lambdas N] gen|sig|cmp args..\n"
           "	gen img..\n"
           "		create vectors for img\n"
-          "		use `gen -` to read lines from STDIN\n"
-          "		use `gen 0` to read NUL terminated strings from STDIN\n"
+          "		use 'gen -' to read lines from STDIN\n"
+          "		use 'gen 0' to read NUL terminated strings from STDIN\n"
           "	sig N M\n"
           "		create N signatures of length M from output of 'gen'\n"
           "		default N=30 M=12\n"
-          "	cmp threshold\n"
-          "		compare vectors, first line is image to compare\n"
+          "	cmp img..\n"
+          "		compare images from stdin\n"
+          "		the first image is compared to all others\n"
+          "		you can use 'cmp -' and 'cmp 0' as in gen\n"
           "data format:\n"
           "	Process parameters:         Plambda(tabopt)..\n"
           "	gen single  line  per file: V(tab)vectordata(tab)filename\n"
           "	sig ordered lines per file: S(tab)signature(tab)filename\n"
+          "	cmp image thesholds:        Tthreshold(tab)filename\n"
           , argv[0]);
   return 42;
 }
