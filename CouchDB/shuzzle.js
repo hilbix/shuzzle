@@ -1,4 +1,6 @@
 #!/usr/bin/env js
+// This Works is placed under the terms of the Copyright Less License,
+// see file COPYRIGHT.CLL.  USE AT OWN RISK, ABSOLUTELY NO WARRANTY.
 //
 // Store Signatures into CouchDB (URL see BASE).
 // Uses 1 record per signature, holding a JSON with a 1 character key of the number of the signature.
