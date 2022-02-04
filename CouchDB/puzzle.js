@@ -1,4 +1,6 @@
 #!/usr/bin/env js
+// This Works is placed under the terms of the Copyright Less License,
+// see file COPYRIGHT.CLL.  USE AT OWN RISK, ABSOLUTELY NO WARRANTY.
 //
 // Find list of possible matches in CouchDB
 //
