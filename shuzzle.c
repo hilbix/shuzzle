@@ -718,7 +718,7 @@ main(int argc, char **argv)
           "	Process parameters:         Plambda(tabopt)..\n"
           "	gen single  line  per file: V(tab)vectordata(tab)filename\n"
           "	sig ordered lines per file: S(tab)signature(tab)filename\n"
-          "	cmp image thesholds:        Tthreshold(tab)filename\n"
+          "	cmp image distances:        distance(tab)filename\n"
           , argv[0]);
   return 42;
 }
