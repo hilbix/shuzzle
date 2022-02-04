@@ -13,6 +13,9 @@
  * and easily parse it by Shell independently of UTF-8 support or not.
  *	IFS=$'\t' read -r data
  * which works even for older shells which do not support NUL lineendings.
+ *
+ * This Works is placed under the terms of the Copyright Less License,
+ * see file COPYRIGHT.CLL.  USE AT OWN RISK, ABSOLUTELY NO WARRANTY.
  */
 
 #include <stdio.h>
