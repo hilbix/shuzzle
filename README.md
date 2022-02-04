@@ -28,8 +28,7 @@ Then:
 - `sig N M` outputs N signatures of length M for each `V`-line
   - Outputs multiple `S`ignature lines per `V`-line
   - Order of the `S` lines matters! (Nth line of file1 relates to Nth line of file2)
-- `cmp THRESHOLD [file..]`
-  - `THRESHOLD` is optional
+- `cmp [file..]`
   - reads the given files and compares them
   - first file is the one compared to all the other ones
   - Again you can give `0` or `-` to read stdin
