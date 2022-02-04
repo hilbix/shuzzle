@@ -1,3 +1,8 @@
+// See https://github.com/hilbix/js
+//
+// This Works is placed under the terms of the Copyright Less License,
+// see file COPYRIGHT.CLL.  USE AT OWN RISK, ABSOLUTELY NO WARRANTY.
+
 'use strict';
 /*S*/ const CONSOLE = this.CONSOLE || ((...a) => { console.log(...a) });		// shall return void 0
 /*S*/ const _FPC = Function.prototype.call;
