@@ -13,6 +13,7 @@
 // !! SEE FILENAME MANGLING BELOW !!
 
 const fetch = require('node-fetch');
+const fs = require('fs').promises;
 const Semaphore = require('./Semaphore');
 
 const OOPS = function (...s) { console.log('OOPS', ...s); process.exit(23) }
@@ -63,6 +64,7 @@ const put = Semaphore(10, async function(proto)
         const	col = String.fromCharCode(n);
 
         const	url = `${BASE}${U(key)}`;
+        const	rms = [];
         let	what;
 
         for (let retry=0;; retry++)
@@ -89,10 +91,13 @@ const put = Semaphore(10, async function(proto)
                 else
                   {
                     what= () => upd=true;
+                    for (const rm of c)
+                      rms.push(fs.unlink(`CACHE/${rm.substring(0,3)}/${rm}.cache`));
                     c.push(id);
                     c.sort();
                   }
               }
+            await Promise.allSettled(rms);
             const ok = await PUTJ(url, doc);
             if (ok.ok)
               break;
