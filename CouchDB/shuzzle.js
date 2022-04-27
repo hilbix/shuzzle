@@ -51,11 +51,27 @@ async function* lines(fd, encoding='utf-8')
     }
 }
 
+const rmfn =
+//  Semaphore(10,
+    rm => fs.unlink(`CACHE/${rm.substring(0,3)}/${rm}.cache`)
+//  )
+  ;
+
 const put = Semaphore(10, async function(proto)
   {
     let n = 32;
     let cnt = 0, upd=false;
     const id = proto.id;
+
+    const rms = {};
+    const dorm = n => Promise.allSettled(Object.keys(rms).filter(k => rms[k]===n).sort().map(k => { rms[k]=n+1; return rmfn(k) }))
+      .then(_ =>
+        {
+          process.stdout.write(`{${_.length}}`);
+          return _
+	})
+      ;
+
     for (const k of proto.s)
       {
         const key	= k.startsWith('_') ? '\t'+k.substring(1) : k;	// escaped _ reserved by CouchDB
@@ -64,7 +80,6 @@ const put = Semaphore(10, async function(proto)
         const	col = String.fromCharCode(n);
 
         const	url = `${BASE}${U(key)}`;
-        const	rms = [];
         let	what;
 
         for (let retry=0;; retry++)
@@ -92,12 +107,13 @@ const put = Semaphore(10, async function(proto)
                   {
                     what= () => upd=true;
                     for (const rm of c)
-                      rms.push(fs.unlink(`CACHE/${rm.substring(0,3)}/${rm}.cache`));
+                      rms[rm] = rms[rm] || 1;
                     c.push(id);
                     c.sort();
                   }
               }
-            await Promise.allSettled(rms);
+
+            await dorm(1);	// remove before
             const ok = await PUTJ(url, doc);
             if (ok.ok)
               break;
@@ -108,6 +124,7 @@ const put = Semaphore(10, async function(proto)
         what();
       }
     process.stdout.write(upd || cnt ? String.fromCharCode(48+cnt) : '.');
+    return dorm(2);		// remove after
   });
 
 async function main()
